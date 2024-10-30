@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.example.enums.Color;
-import org.example.enums.Nationality;
-
-import javax.persistence.Id;
+import org.library.enums.Color;
+import org.library.enums.Nationality;
 
 
 @Getter
@@ -20,7 +18,7 @@ public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
     @SequenceGenerator(name = "sequence", allocationSize = 1, sequenceName = "person_seq")
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;

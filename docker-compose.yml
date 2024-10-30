@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  postgresql:
+    image: postgres:14
+    container_name: soa
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=passport
+
+    networks:
+      - backend
+
+    #volumes:
+    #  - postgresql-data:/var/lib/postgresql/data
+
+  liquibase-migrations:
+    image: liquibase/liquibase:4.18
+    command:
+      - --hub-mode=off
+      - --changelog-file=master.xml
+      - --driver=org.postgresql.Driver
+      - --url=jdbc:postgresql://postgresql:5432/passport
+      - --username=postgres
+      - --password=postgres
+      - update
+    volumes:
+      - ./migrations:/liquibase/changelog
+    depends_on:
+      - postgresql
+
+    networks:
+      - backend
+
+volumes:
+  postgresql-data:
+    name: postgres-data-volume
+
+networks:
+  backend:

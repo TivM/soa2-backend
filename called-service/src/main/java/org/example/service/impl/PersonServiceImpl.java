@@ -20,8 +20,14 @@ import java.util.stream.Stream;
 @Stateless
 public class PersonServiceImpl implements PersonService {
 
-    @Inject
-    private PersonRepository personRepository;
+//    @Inject
+//    private PersonRepository personRepository;
+
+    private final PersonRepository personRepository;
+
+    public PersonServiceImpl() {
+        this.personRepository = new PersonRepository();
+    }
 
     @Override
     public Person add(

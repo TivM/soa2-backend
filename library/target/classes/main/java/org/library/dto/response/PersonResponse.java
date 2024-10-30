@@ -2,9 +2,8 @@ package org.library.dto.response;
 
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
+import org.library.enums.Color;
 import org.library.enums.Nationality;
-
-import java.awt.*;
 
 public record PersonResponse(
         int id,

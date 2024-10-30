@@ -1,2 +1,5 @@
 org/example/resources/PersonResource.class
+org/example/service/PersonService.class
+org/example/repository/PersonRepository.class
+org/example/service/impl/PersonServiceImpl.class
 PersonApplication.class

@@ -2,7 +2,8 @@ package org.example.repository;
 
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
 import org.library.entity.Person;
@@ -16,27 +17,50 @@ import java.util.Optional;
 @Stateless
 public class PersonRepository {
 
-    @PersistenceContext
-    private EntityManager em;
+//    @PersistenceContext(unitName = "Person")
+//    private EntityManager em;
+
+    private final EntityManagerFactory entityManagerFactory;
+
+    public PersonRepository() {
+        entityManagerFactory = Persistence.createEntityManagerFactory("Person");
+    }
+
+
 
     public Person create(Person person) {
-        em.persist(person);
-        em.flush();
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(person);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            em.close();
+        }
         return person;
     }
 
     public List<Person> findAll() {
+        EntityManager em = entityManagerFactory.createEntityManager();
         return em.createQuery("SELECT p FROM Person p", Person.class).getResultList();
+
     }
 
     public Optional<Person> findById(int personId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
         return Optional.ofNullable(em.find(Person.class, personId));
     }
 
     public void delete(int personId) {
+        EntityManager em = entityManagerFactory.createEntityManager();
         Person person = findById(personId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid person Id:" + personId));
         em.remove(person);
+        em.close();
     }
 
     public Person update(
@@ -51,6 +75,7 @@ public class PersonRepository {
             Nationality nationality,
             Location location
     ) {
+        EntityManager em = entityManagerFactory.createEntityManager();
         Person person = findById(personId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid person Id:" + personId));
         Person newPerson = new Person()
@@ -68,5 +93,9 @@ public class PersonRepository {
                 .setLocationCoordinateY(location.y())
                 .setLocationName(location.name());
         return em.merge(newPerson);
+    }
+
+    private void close() {
+        entityManagerFactory.close(); // Закрываем EntityManagerFactory при завершении работы приложения
     }
 }

@@ -1,9 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="exploded-ear" name="called-service">
-    <output-path>$PROJECT_DIR$/out/artifacts/called_service</output-path>
-    <root id="root">
-      <element id="module-output" name="called-service" />
-      <element id="module-source" name="called-service" />
-    </root>
-  </artifact>
-</component>
