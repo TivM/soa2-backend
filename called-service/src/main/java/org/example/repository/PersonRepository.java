@@ -11,25 +11,23 @@ import org.library.enums.Color;
 import org.library.enums.Nationality;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Stateless
 public class PersonRepository {
 
-//    @PersistenceContext(unitName = "Person")
-//    private EntityManager em;
+    private static final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Person");
 
-    private final EntityManagerFactory entityManagerFactory;
-
-    public PersonRepository() {
-        entityManagerFactory = Persistence.createEntityManagerFactory("Person");
+    public EntityManager getEntityManager() {
+        return entityManagerFactory.createEntityManager();
     }
 
 
 
     public Person create(Person person) {
-        EntityManager em = entityManagerFactory.createEntityManager();
+        EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(person);
@@ -45,26 +43,60 @@ public class PersonRepository {
     }
 
     public List<Person> findAll() {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        return em.createQuery("SELECT p FROM Person p", Person.class).getResultList();
-
+        EntityManager em = getEntityManager();
+        List<Person> personList = new ArrayList<>();
+        try {
+            em.getTransaction().begin();
+            personList = em.createQuery("SELECT p FROM Person p", Person.class).getResultList();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            em.close();
+        }
+        return personList;
     }
 
-    public Optional<Person> findById(int personId) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        return Optional.ofNullable(em.find(Person.class, personId));
+    public Optional<Person> findById(Integer personId) {
+        EntityManager em = getEntityManager();
+        Person person = null;
+        try {
+            em.getTransaction().begin();
+            person = em.find(Person.class, personId);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            em.close();
+        }
+        return Optional.ofNullable(person);
     }
 
-    public void delete(int personId) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        Person person = findById(personId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid person Id:" + personId));
-        em.remove(person);
-        em.close();
+    public void delete(Integer personId) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            Person person = em.find(Person.class, personId);
+            if (person == null){
+                throw new IllegalArgumentException("Invalid person Id:" + personId);
+            }
+            em.remove(person);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            em.close();
+        }
     }
 
     public Person update(
-            int personId,
+            Integer personId,
             String name,
             Coordinates coordinates,
             double height,
@@ -75,27 +107,38 @@ public class PersonRepository {
             Nationality nationality,
             Location location
     ) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        Person person = findById(personId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid person Id:" + personId));
-        Person newPerson = new Person()
-                .setId(personId)
-                .setName(name)
-                .setCoordinateX(coordinates.x())
-                .setCoordinateY(coordinates.y())
-                .setHeight(height)
-                .setBirthday(birthday)
-                .setPassportID(passportID)
-                .setHairColor(hairColor)
-                .setEyesColor(eyesColor)
-                .setNationality(nationality)
-                .setLocationCoordinateX(location.x())
-                .setLocationCoordinateY(location.y())
-                .setLocationName(location.name());
-        return em.merge(newPerson);
-    }
+        EntityManager em = getEntityManager();
+        Person updatedPerson = null;
+        try {
+            em.getTransaction().begin();
+            updatedPerson = em.find(Person.class, personId);
+            if (updatedPerson == null){
+                throw new IllegalArgumentException("Invalid person Id:" + personId);
+            }
+            updatedPerson
+                    .setId(personId)
+                    .setName(name)
+                    .setCoordinateX(coordinates.x())
+                    .setCoordinateY(coordinates.y())
+                    .setHeight(height)
+                    .setBirthday(birthday)
+                    .setPassportID(passportID)
+                    .setHairColor(hairColor)
+                    .setEyesColor(eyesColor)
+                    .setNationality(nationality)
+                    .setLocationCoordinateX(location.x())
+                    .setLocationCoordinateY(location.y())
+                    .setLocationName(location.name());
+            em.merge(updatedPerson);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            em.close();
+        }
 
-    private void close() {
-        entityManagerFactory.close(); // Закрываем EntityManagerFactory при завершении работы приложения
+        return updatedPerson;
     }
 }

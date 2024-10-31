@@ -23,10 +23,10 @@ public interface PersonService {
                Location location
     );
     List<Person> getAll();
-    Optional<Person> getByPersonId(int personId);
-    void deleteByPersonId(int personId);
+    Optional<Person> getByPersonId(Integer personId);
+    void deleteByPersonId(Integer personId);
     Person updateByPersonId(
-            int personId,
+            Integer personId,
             String name,
             Coordinates coordinates,
             double height,

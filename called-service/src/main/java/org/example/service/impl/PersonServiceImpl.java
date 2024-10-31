@@ -1,7 +1,6 @@
 package org.example.service.impl;
 
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
 import org.library.entity.Person;
@@ -19,9 +18,6 @@ import java.util.stream.Stream;
 
 @Stateless
 public class PersonServiceImpl implements PersonService {
-
-//    @Inject
-//    private PersonRepository personRepository;
 
     private final PersonRepository personRepository;
 
@@ -65,20 +61,20 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Optional<Person> getByPersonId(int personId) {
+    public Optional<Person> getByPersonId(Integer personId) {
         return Optional.ofNullable(personRepository.findById(personId).orElseThrow(
                 () -> new IllegalArgumentException("Invalid person Id:" + personId)
         ));
     }
 
     @Override
-    public void deleteByPersonId(int personId) {
+    public void deleteByPersonId(Integer personId) {
         personRepository.delete(personId);
     }
 
     @Override
     public Person updateByPersonId(
-            int personId,
+            Integer personId,
             String name,
             Coordinates coordinates,
             double height,
