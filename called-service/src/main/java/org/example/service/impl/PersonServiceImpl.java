@@ -1,18 +1,24 @@
 package org.example.service.impl;
 
 import jakarta.ejb.Stateless;
-import org.library.dto.Coordinates;
-import org.library.dto.Location;
+import org.library.dto.*;
 import org.library.entity.Person;
 import org.example.repository.PersonRepository;
 import org.example.service.PersonService;
 import org.library.enums.Color;
+import org.library.enums.FilteringOperation;
 import org.library.enums.Nationality;
 import org.library.enums.Operation;
+import org.library.exception.IllegalParameterException;
+import org.library.exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,13 +69,16 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public Optional<Person> getByPersonId(Integer personId) {
         return Optional.ofNullable(personRepository.findById(personId).orElseThrow(
-                () -> new IllegalArgumentException("Invalid person Id:" + personId)
+                () -> new ResourceNotFoundException("Invalid person Id:" + personId)
         ));
     }
 
     @Override
     public void deleteByPersonId(Integer personId) {
-        personRepository.delete(personId);
+        Person person = personRepository.findById(personId).orElseThrow(
+                () -> new ResourceNotFoundException("Person with id " + personId + " doesn't exist")
+        );
+        personRepository.delete(person.getId());
     }
 
     @Override
@@ -85,8 +94,11 @@ public class PersonServiceImpl implements PersonService {
             Nationality nationality,
             Location location
     ) {
+        Person person = personRepository.findById(personId).orElseThrow(
+                () -> new ResourceNotFoundException("Person with id " + personId + " doesn't exist")
+        );
         return personRepository.update(
-                personId,
+                person.getId(),
                 name,
                 coordinates,
                 height,
@@ -102,36 +114,145 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public double getHeight(String operation) {
         List<Person> persons = personRepository.findAll();
-        return switch (operation.toUpperCase()) {
-            case "AVERAGE" -> persons.stream()
+        return switch (operation.toLowerCase()) {
+            case "average" -> persons.stream()
                     .mapToDouble(Person::getHeight)
                     .average()
                     .orElse(0.0);
-            case "MAX" -> persons.stream()
+            case "max" -> persons.stream()
                     .mapToDouble(Person::getHeight)
                     .max()
                     .orElse(0.0);
-            case "MIN" -> persons.stream()
+            case "min" -> persons.stream()
                     .mapToDouble(Person::getHeight)
                     .min()
                     .orElse(0.0);
-            default -> throw new RuntimeException("Operation doesn't exist");
+            default -> throw new IllegalParameterException("Operation doesn't exist");
         };
     }
 
     @Override
     public List<String> getPersonEnum(String enumName) {
-        return switch (enumName.toUpperCase()){
-            case "COLOR" -> Stream.of(Color.values())
+        return switch (enumName.toLowerCase()){
+            case "color" -> Stream.of(Color.values())
                     .map(Enum::name)
                     .collect(Collectors.toList());
-            case "NATIONALITY" -> Stream.of(Nationality.values())
+            case "nationality" -> Stream.of(Nationality.values())
                     .map(Enum::name)
                     .collect(Collectors.toList());
-            case "OPERATION" -> Stream.of(Operation.values())
+            case "operation" -> Stream.of(Operation.values())
                     .map(Enum::name)
                     .collect(Collectors.toList());
-            default -> throw new IllegalStateException("Unexpected value: " + enumName.toUpperCase());
+            default -> throw new IllegalParameterException("Unexpected value: " + enumName.toUpperCase());
         };
     }
+
+
+    @Override
+    public Page<Person> getPersonsFilter(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize) {
+        if (page != null || pageSize != null){
+            if (page == null){
+                page = 1;
+            }
+            if (pageSize == null){
+                pageSize = 20;
+            }
+        }
+
+        Pattern nestedFieldNamePattern = Pattern.compile("(.*)\\.(.*)");
+        Pattern lhsPattern = Pattern.compile("(.*)\\[(.*)\\]=(.*)");
+
+        List<Sort> sorts = new ArrayList<>();
+
+        if (!sortsList.isEmpty()){
+            boolean containsOppositeSorts = sortsList.stream().allMatch(e1 ->
+                    sortsList.stream().allMatch(e2 -> Objects.equals(e1, "-" + e2))
+            );
+
+            if (containsOppositeSorts){
+                throw new IllegalParameterException("Request contains opposite sort parameters");
+            }
+
+            for (String sort: sortsList){
+                boolean desc = sort.startsWith("-");
+                String sortFieldName = desc ? sort.split("-")[1] : sort;
+                String nestedName = null;
+
+                Matcher matcher = nestedFieldNamePattern.matcher(sortFieldName);
+
+                if (matcher.find()){
+                    String nestedField = matcher.group(2).substring(0, 1).toLowerCase() + matcher.group(2).substring(1);
+                    sortFieldName = matcher.group(1);
+                    nestedName = nestedField;
+                }
+
+                sorts.add(new Sort(desc, sortFieldName, nestedName));
+            }
+        }
+
+        List<Filter> filters = new ArrayList<>();
+
+        for (String filter : filtersList){
+            Matcher matcher = lhsPattern.matcher(filter);
+            String fieldName = null, fieldValue = null;
+            FilteringOperation filteringOperation = null;
+            String nestedName = null;
+
+            if (matcher.find()){
+                fieldName = matcher.group(1);
+
+                Matcher nestedFieldMatcher = nestedFieldNamePattern.matcher(fieldName);
+                if (nestedFieldMatcher.find()){
+                    String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toLowerCase() + nestedFieldMatcher.group(2).substring(1);
+                    fieldName = nestedFieldMatcher.group(1);
+                    nestedName = nestedField;
+                }
+
+                filteringOperation = FilteringOperation.fromValue(matcher.group(2));
+
+                boolean isEnum = Objects.equals(fieldName, "hairColor") || Objects.equals(fieldName, "eyesColor") || Objects.equals(fieldName, "nationality");
+                if (isEnum){
+                    if (!Objects.equals(filteringOperation, FilteringOperation.EQ) &&
+                            !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
+                        throw new IllegalParameterException("Only [eq] and [neq] operations are allowed for field");
+                    }
+                }
+
+                if (isEnum){
+                    fieldValue = matcher.group(3).toLowerCase();
+                } else fieldValue = matcher.group(3);
+            }
+
+            if (fieldName == null || fieldName.isEmpty()){
+                throw new IllegalParameterException("Filter field name is empty");
+            }
+
+            if (fieldValue == null || fieldValue.isEmpty()){
+                throw new IllegalParameterException("Filter field value is empty");
+            }
+
+            if (Objects.equals(filteringOperation, FilteringOperation.UNDEFINED)){
+                throw new IllegalParameterException("No or unknown filtering operation. Possible values are: eq,neq,gt,lt,gte,lte.");
+            }
+
+            filters.add(new Filter(fieldName, nestedName, filteringOperation, fieldValue));
+        }
+
+        Page<Person> entityPage;
+
+        try {
+            entityPage = personRepository.getSortedAndFilteredPage(sorts, filters, page, pageSize);
+        } catch (NullPointerException e){
+            throw new IllegalParameterException("Error while getting page. Check query params format. " + e.getMessage());
+        }
+
+        return new Page<>(
+                entityPage.objects(),
+                entityPage.page(),
+                entityPage.pageSize(),
+                entityPage.totalPages(),
+                entityPage.totalCount()
+        );
+    }
+
 }

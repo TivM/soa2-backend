@@ -22,7 +22,7 @@ public class DemographyServiceImpl implements DemographyService {
         PersonResponse[] persons = personsClient.getAllPersons();
         List<String> colors = personsClient.getPersonEnum(color).enumValues();
         if (color.isEmpty() | !colors.contains(color.toUpperCase())) {
-            throw new IllegalParameterException("color doesn't exist");
+            throw new IllegalParameterException("Color doesn't exist");
         }
         Long count = 0L;
         for (PersonResponse person : persons) {
@@ -38,12 +38,12 @@ public class DemographyServiceImpl implements DemographyService {
         List<String> colors = personsClient.getPersonEnum(hairColor).enumValues();
         assert hairColor != null;
         if (hairColor.isEmpty() | !colors.contains(hairColor.toUpperCase())) {
-            throw new IllegalParameterException("color doesn't exist");
+            throw new IllegalParameterException("Color doesn't exist");
         }
         List<String> nationalities = personsClient.getPersonEnum(nationality).enumValues();
         assert nationality != null;
         if (nationality.isEmpty() | !nationalities.contains(nationality.toUpperCase())) {
-            throw new IllegalArgumentException("nationality doesn't exist");
+            throw new IllegalParameterException("Nationality doesn't exist");
         }
         PersonResponse[] persons = personsClient.getAllPersons();
         int total = persons.length;

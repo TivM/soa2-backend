@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
+import org.library.dto.Page;
 import org.library.entity.Person;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
@@ -41,4 +42,6 @@ public interface PersonService {
     double getHeight(String operation);
 
     List<String> getPersonEnum(String enumName);
+
+    Page<Person> getPersonsFilter(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize);
 }

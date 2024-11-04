@@ -1,18 +1,18 @@
 package org.example.repository;
 
 import jakarta.ejb.Stateless;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-import org.library.dto.Coordinates;
-import org.library.dto.Location;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.*;
+import org.library.dto.*;
 import org.library.entity.Person;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
+import org.library.enums.Operation;
 
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Stateless
@@ -81,9 +81,6 @@ public class PersonRepository {
         try {
             em.getTransaction().begin();
             Person person = em.find(Person.class, personId);
-            if (person == null){
-                throw new IllegalArgumentException("Invalid person Id:" + personId);
-            }
             em.remove(person);
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -112,9 +109,6 @@ public class PersonRepository {
         try {
             em.getTransaction().begin();
             updatedPerson = em.find(Person.class, personId);
-            if (updatedPerson == null){
-                throw new IllegalArgumentException("Invalid person Id:" + personId);
-            }
             updatedPerson
                     .setId(personId)
                     .setName(name)
@@ -138,7 +132,187 @@ public class PersonRepository {
         } finally {
             em.close();
         }
-
         return updatedPerson;
     }
+
+
+    public Page<Person> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filtersList, Integer page, Integer size) {
+        CriteriaBuilder criteriaBuilder = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<Person> flatQuery = criteriaBuilder.createQuery(Person.class);
+        Root<Person> root = flatQuery.from(Person.class);
+
+        CriteriaQuery<Person> select = flatQuery.select(root);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (!filtersList.isEmpty()){
+            predicates = new ArrayList<>();
+
+            for (Filter filter : filtersList){
+
+                switch (filter.filteringOperation()){
+                    case EQ:
+                        if (filter.nestedName() != null) {
+                            predicates.add(criteriaBuilder.equal(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            getTypedFieldValue(filter.fieldName(), filter.fieldValue())
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.equal(
+                                            root.get(filter.fieldName()),
+                                            getTypedFieldValue(filter.fieldName(), filter.fieldValue())
+                                    )
+                            );
+                        }
+                        break;
+                    case NEQ:
+                        if (filter.nestedName() != null) {
+                            predicates.add(criteriaBuilder.notEqual(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            getTypedFieldValue(filter.fieldName(), filter.fieldValue())
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.notEqual(
+                                            root.get(filter.fieldName()),
+                                            getTypedFieldValue(filter.fieldName(), filter.fieldValue())
+                                    )
+                            );
+                        }
+                        break;
+                    case GT:
+                        if (filter.nestedName() != null) {
+                            predicates.add(criteriaBuilder.greaterThan(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.greaterThan(
+                                            root.get(filter.fieldName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        }
+                        break;
+                    case LT:
+                        if (filter.nestedName() != null) {
+                            predicates.add(criteriaBuilder.lessThan(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.lessThan(
+                                            root.get(filter.fieldName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        }
+                        break;
+                    case GTE:
+                        if (filter.nestedName() != null) {
+                            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                            root.get(filter.fieldName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        }
+                        break;
+                    case LTE:
+                        if (filter.nestedName() != null){
+                            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                            root.get(filter.fieldName()),
+                                            filter.fieldValue()
+                                    )
+                            );
+                        }
+                        break;
+                    case UNDEFINED:
+                        break;
+                }
+            }
+
+            select.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+        }
+
+        if (!sortList.isEmpty()){
+            List<Order> orderList = new ArrayList<>();
+
+            for (Sort sortItem : sortList){
+                if (sortItem.desc()){
+                    if (sortItem.nestedName() != null){
+                        orderList.add(criteriaBuilder.desc(root.get(sortItem.fieldName()).get(sortItem.nestedName())));
+                    } else {
+                        orderList.add(criteriaBuilder.desc(root.get(sortItem.fieldName())));
+                    }
+                } else {
+                    if (sortItem.nestedName() != null){
+                        orderList.add(criteriaBuilder.asc(root.get(sortItem.fieldName()).get(sortItem.nestedName())));
+                    } else {
+                        orderList.add(criteriaBuilder.asc(root.get(sortItem.fieldName())));
+                    }
+                }
+            }
+            select.orderBy(orderList);
+        }
+
+        TypedQuery<Person> typedQuery = getEntityManager().createQuery(select);
+
+        Page<Person> ret = null;
+
+        if (page != null && size != null){
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
+
+            long countResult = 0;
+
+            if (!predicates.isEmpty()){
+                Query queryTotal = getEntityManager().createQuery("SELECT COUNT(p.id) FROM Person p");
+                countResult = (long) queryTotal.getSingleResult();
+            } else {
+                CriteriaBuilder qb = getEntityManager().getCriteriaBuilder();
+                CriteriaQuery<Long> cq = qb.createQuery(Long.class);
+                cq.select(qb.count(cq.from(Person.class)));
+                cq.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+                countResult = getEntityManager().createQuery(cq).getSingleResult();
+            }
+
+            ret = new Page<>(
+                    typedQuery.getResultList(),
+                    page,
+                    size,
+                    (int) Math.ceil((countResult * 1.0) / size),
+                    countResult
+            );
+        }
+        return ret;
+    }
+
+
+    private Object getTypedFieldValue(String fieldName, String fieldValue) {
+        if (Objects.equals(fieldName, "hairColor")) {
+            return Color.fromValue(fieldValue);
+        } else if (Objects.equals(fieldName, "eyesColor")) {
+            return Operation.fromValue(fieldValue);
+        } else if (Objects.equals(fieldName, "nationality")) {
+            return Operation.fromValue(fieldValue);
+        } else if (Objects.equals(fieldName, "operation")) {
+            return Operation.fromValue(fieldValue);
+        } else return fieldValue;
+    }
+
 }

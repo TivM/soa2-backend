@@ -2,4 +2,7 @@
 /Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/resources/PersonResource.java
 /Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/service/PersonService.java
 /Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/repository/PersonRepository.java
+/Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/exception/ResourceNotFoundMapper.java
+/Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/dto/ExceptionDTO.java
 /Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/PersonApplication.java
+/Users/vladislavtrofimcenko/Documents/projects/IdeaProjects/SOA/called-service/src/main/java/org/example/exception/IllegalParameterMapper.java
