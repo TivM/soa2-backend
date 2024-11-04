@@ -1,17 +1,22 @@
 package org.example.resources;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
+import org.library.dto.Page;
 import org.library.dto.request.PersonRequest;
 import org.library.dto.response.*;
 import org.library.entity.Person;
 import org.example.service.impl.PersonServiceImpl;
+import org.library.exception.IllegalParameterException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Path("/persons")
 public class PersonResource {
@@ -42,15 +47,64 @@ public class PersonResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllPersons() {
-        List<Person> persons = personService.getAll();
+    public Response getAllPersons(final HttpServletRequest request) {
+//        List<Person> persons = personService.getAll();
+//        List<PersonResponse> listPersonResponses = new ArrayList<>();
+//        for (var person: persons) {
+//            listPersonResponses.add(
+//                    createPersonResponse(person)
+//            );
+//        }
+        String[] sortParameters = request.getParameterValues("sort");
+        String[] filterParameters = request.getParameterValues("filter");
+
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        Integer page = null, pageSize = null;
+
+        if (!pageParam.isEmpty()) {
+            page = Integer.parseInt(pageParam);
+            if (page <= 0) {
+                throw new IllegalParameterException("wrong page param");
+            }
+        }
+        if (!pageSizeParam.isEmpty()) {
+            pageSize = Integer.parseInt(pageSizeParam);
+            if (pageSize <= 0) {
+                throw new IllegalParameterException("wrong page size");
+            }
+        }
+
+
+        List<String> sort = sortParameters == null
+                ? new ArrayList<>()
+                : Stream.of(sortParameters).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toList());
+        List<String> filter = filterParameters == null
+                ? new ArrayList<>()
+                : Stream.of(filterParameters).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toList());
+
+        Page<Person> resultPage = personService.getPersonsFilter(sort, filter, page, pageSize);
+
+        if (resultPage == null) {
+            return Response.ok(new ListPersonResponse(List.of(), 0, 0 ,0 ,0L)).build();
+        }
+
         List<PersonResponse> listPersonResponses = new ArrayList<>();
-        for (var person: persons) {
+
+        for (var person: resultPage.objects()) {
             listPersonResponses.add(
                     createPersonResponse(person)
             );
         }
-        return Response.ok(new ListPersonResponse(listPersonResponses)).build();
+
+        return Response.ok(new ListPersonResponse(
+                listPersonResponses,
+                resultPage.page(),
+                resultPage.pageSize(),
+                resultPage.totalPages(),
+                resultPage.totalCount()
+                )
+        ).build();
     }
 
     @GET
@@ -106,9 +160,6 @@ public class PersonResource {
                 personRequest.location());
         return Response.ok(createPersonResponse(person)).build();
     }
-
-
-
 
     private PersonResponse createPersonResponse(Person person){
         return new PersonResponse(
