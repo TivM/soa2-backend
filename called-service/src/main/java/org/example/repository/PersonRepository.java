@@ -272,7 +272,7 @@ public class PersonRepository {
 
         TypedQuery<Person> typedQuery = getEntityManager().createQuery(select);
 
-        Page<Person> ret = null;
+        //Page<Person> ret = new Page<>(List.of(), 0, 0,0,0L);
 
         if (page != null && size != null){
             typedQuery.setFirstResult((page - 1) * size);
@@ -291,7 +291,7 @@ public class PersonRepository {
                 countResult = getEntityManager().createQuery(cq).getSingleResult();
             }
 
-            ret = new Page<>(
+           return new Page<>(
                     typedQuery.getResultList(),
                     page,
                     size,
@@ -299,7 +299,9 @@ public class PersonRepository {
                     countResult
             );
         }
-        return ret;
+
+        return new Page<>(
+                typedQuery.getResultList(),0, 0, 0, (long) typedQuery.getResultList().size());
     }
 
 

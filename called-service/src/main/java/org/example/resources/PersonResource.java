@@ -1,6 +1,5 @@
 package org.example.resources;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -17,8 +16,8 @@ import org.library.exception.IllegalParameterException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Path("/persons")
 public class PersonResource {
@@ -55,43 +54,36 @@ public class PersonResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllPersons(final HttpServletRequest request) {
-//        List<Person> persons = personService.getAll();
-//        List<PersonResponse> listPersonResponses = new ArrayList<>();
-//        for (var person: persons) {
-//            listPersonResponses.add(
-//                    createPersonResponse(person)
-//            );
-//        }
-        String[] sortParameters = request.getParameterValues("sort");
-        String[] filterParameters = request.getParameterValues("filter");
+    public Response getAllPersons(
+            @QueryParam("sort") List<String> sortParameters,
+            @QueryParam("filter") List<String> filterParameters,
+            @QueryParam("page") String page,
+            @QueryParam("pageSize") String pageSize
+    ) {
+        Integer pageParam = null, pageSizeParam = null;
 
-        String pageParam = request.getParameter("page");
-        String pageSizeParam = request.getParameter("pageSize");
-        Integer page = null, pageSize = null;
-
-        if (!pageParam.isEmpty()) {
-            page = Integer.parseInt(pageParam);
-            if (page <= 0) {
+        if (page != null) {
+            pageParam = Integer.parseInt(page);
+            if (pageParam <= 0) {
                 throw new IllegalParameterException("wrong page param");
             }
         }
-        if (!pageSizeParam.isEmpty()) {
-            pageSize = Integer.parseInt(pageSizeParam);
-            if (pageSize <= 0) {
+        if (pageSize != null) {
+            pageSizeParam = Integer.parseInt(pageSize);
+            if (pageSizeParam <= 0) {
                 throw new IllegalParameterException("wrong page size");
             }
         }
 
 
         List<String> sort = sortParameters == null
-                ? new ArrayList<>()
-                : Stream.of(sortParameters).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toList());
+                ? List.of()
+                : sortParameters.stream().filter(Predicate.not(String::isEmpty)).collect(Collectors.toList());
         List<String> filter = filterParameters == null
                 ? new ArrayList<>()
-                : Stream.of(filterParameters).filter(s -> s != null && !s.isEmpty()).collect(Collectors.toList());
+                : filterParameters.stream().filter(Predicate.not(String::isEmpty)).collect(Collectors.toList());
 
-        Page<Person> resultPage = personService.getPersonsFilter(sort, filter, page, pageSize);
+        Page<Person> resultPage = personService.getPersonsFilter(sort, filter, pageParam, pageSizeParam);
 
         if (resultPage == null) {
             return Response.ok(new ListPersonResponse(List.of(), 0, 0 ,0 ,0L)).build();

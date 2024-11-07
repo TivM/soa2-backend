@@ -63,6 +63,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
 			<artifactId>library</artifactId>
 			<groupId>org.example</groupId>
 			<version>1.0-SNAPSHOT</version>
