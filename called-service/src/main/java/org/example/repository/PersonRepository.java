@@ -307,9 +307,9 @@ public class PersonRepository {
         if (Objects.equals(fieldName, "hairColor")) {
             return Color.fromValue(fieldValue);
         } else if (Objects.equals(fieldName, "eyesColor")) {
-            return Operation.fromValue(fieldValue);
+            return Color.fromValue(fieldValue);
         } else if (Objects.equals(fieldName, "nationality")) {
-            return Operation.fromValue(fieldValue);
+            return Nationality.fromValue(fieldValue);
         } else if (Objects.equals(fieldName, "operation")) {
             return Operation.fromValue(fieldValue);
         } else return fieldValue;

@@ -11,6 +11,8 @@ import org.library.dto.request.PersonRequest;
 import org.library.dto.response.*;
 import org.library.entity.Person;
 import org.example.service.impl.PersonServiceImpl;
+import org.library.enums.Color;
+import org.library.enums.Nationality;
 import org.library.exception.IllegalParameterException;
 
 import java.util.ArrayList;
@@ -31,18 +33,24 @@ public class PersonResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createPerson(PersonRequest personRequest) {
-        Person person = personService.add(
-                personRequest.name(),
-                personRequest.coordinates(),
-                personRequest.height(),
-                personRequest.birthday(),
-                personRequest.passportID(),
-                personRequest.hairColor(),
-                personRequest.eyesColor(),
-                personRequest.nationality(),
-                personRequest.location()
-        );
-        return Response.ok(createPersonResponse(person)).build();
+        if (isEnumCorrect("color", personRequest.eyesColor().name())
+                && isEnumCorrect("color", personRequest.hairColor().name())
+                && isEnumCorrect("nationality", personRequest.nationality().name())
+        ){
+            Person person = personService.add(
+                    personRequest.name(),
+                    personRequest.coordinates(),
+                    personRequest.height(),
+                    personRequest.birthday(),
+                    personRequest.passportID(),
+                    personRequest.hairColor(),
+                    personRequest.eyesColor(),
+                    personRequest.nationality(),
+                    personRequest.location()
+            );
+            return Response.ok(createPersonResponse(person)).build();
+        }
+        throw new IllegalParameterException("Incorrect input body");
     }
 
     @GET
@@ -120,10 +128,10 @@ public class PersonResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPersonHeight(@PathParam("operation") String operation) {
         double height = personService.getHeight(operation);
-        return switch (operation.toUpperCase()) {
-            case "AVERAGE" -> Response.ok(new AvgHeightResponse(height)).build();
-            case "MAX" -> Response.ok(new MaxHeightResponse(height)).build();
-            case "MIN" -> Response.ok(new MinHeightResponse(height)).build();
+        return switch (operation.toLowerCase()) {
+            case "average" -> Response.ok(new AvgHeightResponse(height)).build();
+            case "max" -> Response.ok(new MaxHeightResponse(height)).build();
+            case "min" -> Response.ok(new MinHeightResponse(height)).build();
             default -> throw new RuntimeException("Operation doesn't exist");
         };
     }
@@ -176,4 +184,13 @@ public class PersonResource {
                 new Location(person.getLocationCoordinateX(), person.getLocationCoordinateY(), person.getLocationName())
         );
     }
+
+    private boolean isEnumCorrect(String enumName, String enumValue) {
+        return switch (enumName) {
+            case "color" -> Color.fromValue(enumValue.toLowerCase()) != null;
+            case "nationality" -> Nationality.fromValue(enumValue.toLowerCase()) != null;
+            default -> false;
+        };
+    }
+
 }
