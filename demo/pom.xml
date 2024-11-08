@@ -69,6 +69,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-resolver-dns-native-macos</artifactId>
+			<version>${netty.version}</version> <!-- Подставьте вашу версию Netty -->
+			<classifier>osx-aarch_64</classifier> <!-- Для ARM чипов, используйте osx-x86_64 для Intel -->
+		</dependency>
+
+		<dependency>
 			<artifactId>library</artifactId>
 			<groupId>org.example</groupId>
 			<version>1.0-SNAPSHOT</version>

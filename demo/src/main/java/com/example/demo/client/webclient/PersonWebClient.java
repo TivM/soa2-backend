@@ -5,6 +5,7 @@ import org.library.dto.Coordinates;
 import org.library.dto.Location;
 import org.library.dto.request.PersonRequest;
 import org.library.dto.response.EnumValuesResponse;
+import org.library.dto.response.ListPersonResponse;
 import org.library.dto.response.PersonResponse;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
@@ -60,13 +61,13 @@ public class PersonWebClient implements PersonsClient {
     }
 
     @Override
-    public PersonResponse[] getAllPersons() {
+    public ListPersonResponse getAllPersons() {
         return webClient
                 .get()
                 .uri(baseUrl)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(PersonResponse[].class)
+                .bodyToMono(ListPersonResponse.class)
                 .block();
     }
 

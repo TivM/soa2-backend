@@ -3,6 +3,7 @@ package com.example.demo.client.api;
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
 import org.library.dto.response.EnumValuesResponse;
+import org.library.dto.response.ListPersonResponse;
 import org.library.dto.response.PersonResponse;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
@@ -21,7 +22,7 @@ public interface PersonsClient {
                              Nationality nationality,
                              Location location
     );
-    PersonResponse[] getAllPersons();
+    ListPersonResponse getAllPersons();
     PersonResponse getByPersonId(Integer personId);
     Void deleteByPersonId(Integer personId);
     PersonResponse updateByPersonId(
