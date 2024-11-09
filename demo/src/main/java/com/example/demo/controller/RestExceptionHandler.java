@@ -16,11 +16,11 @@ import java.time.LocalDateTime;
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ResourceNotFoundException.class})
-    public ResponseEntity<ResourceNotFoundErrorResponse> handleResourceNotFoundException() {
+    public ResponseEntity<ResourceNotFoundErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         return new ResponseEntity<>(
                 new ResourceNotFoundErrorResponse(
                         "404",
-                        "Resource not found",
+                        ex.getMessage(),
                         LocalDateTime.now().toString()
                 ),
                 HttpStatus.NOT_FOUND

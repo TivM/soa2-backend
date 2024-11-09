@@ -111,6 +111,9 @@ public class PersonResource {
     @Path("/{person_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPersonById(@PathParam("person_id") int personId) {
+        if (personId < 1 || personId > 2000000000){
+            throw new IllegalParameterException("Person id must be > 1 and < 2000000000");
+        }
         Person person = personService.getByPersonId(personId).get();
         return Response.ok(createPersonResponse(person)).build();
     }
@@ -139,6 +142,9 @@ public class PersonResource {
     @DELETE
     @Path("/{person_id}")
     public Response deletePersonById(@PathParam("person_id") int personId) {
+        if (personId < 1 || personId > 2000000000){
+            throw new IllegalParameterException("Person id must be > 1 and < 2000000000");
+        }
         personService.deleteByPersonId(personId);
         return Response.noContent().build();
     }
@@ -147,6 +153,9 @@ public class PersonResource {
     @Path("/{person_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePersonById(@PathParam("person_id") int personId, PersonRequest personRequest) {
+        if (personId < 1 || personId > 2000000000){
+            throw new IllegalParameterException("Person id must be > 1 and < 2000000000");
+        }
         Person person = personService.updateByPersonId(
                 personId,
                 personRequest.name(),
