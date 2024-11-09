@@ -3,11 +3,16 @@ package org.example.repository;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
+import jakarta.ws.rs.core.Response;
 import org.library.dto.*;
+import org.library.dto.response.AvgHeightResponse;
+import org.library.dto.response.MaxHeightResponse;
+import org.library.dto.response.MinHeightResponse;
 import org.library.entity.Person;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
 import org.library.enums.Operation;
+import org.library.exception.IllegalParameterException;
 
 
 import java.util.ArrayList;
@@ -154,7 +159,7 @@ public class PersonRepository {
                     case EQ:
                         if (filter.nestedName() != null) {
                             predicates.add(criteriaBuilder.equal(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             getTypedFieldValue(filter.fieldName(), filter.fieldValue())
                                     )
                             );
@@ -169,7 +174,7 @@ public class PersonRepository {
                     case NEQ:
                         if (filter.nestedName() != null) {
                             predicates.add(criteriaBuilder.notEqual(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             getTypedFieldValue(filter.fieldName(), filter.fieldValue())
                                     )
                             );
@@ -184,7 +189,7 @@ public class PersonRepository {
                     case GT:
                         if (filter.nestedName() != null) {
                             predicates.add(criteriaBuilder.greaterThan(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             filter.fieldValue()
                                     )
                             );
@@ -199,7 +204,7 @@ public class PersonRepository {
                     case LT:
                         if (filter.nestedName() != null) {
                             predicates.add(criteriaBuilder.lessThan(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             filter.fieldValue()
                                     )
                             );
@@ -214,7 +219,7 @@ public class PersonRepository {
                     case GTE:
                         if (filter.nestedName() != null) {
                             predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             filter.fieldValue()
                                     )
                             );
@@ -229,7 +234,7 @@ public class PersonRepository {
                     case LTE:
                         if (filter.nestedName() != null){
                             predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                            root.get(filter.fieldName()).get(filter.nestedName()),
+                                            root.get(resolveNestedName(filter.fieldName(), filter.nestedName())),
                                             filter.fieldValue()
                                     )
                             );
@@ -255,13 +260,13 @@ public class PersonRepository {
             for (Sort sortItem : sortList){
                 if (sortItem.desc()){
                     if (sortItem.nestedName() != null){
-                        orderList.add(criteriaBuilder.desc(root.get(sortItem.fieldName()).get(sortItem.nestedName())));
+                        orderList.add(criteriaBuilder.desc(root.get(resolveNestedName(sortItem.fieldName(), sortItem.nestedName()))));
                     } else {
                         orderList.add(criteriaBuilder.desc(root.get(sortItem.fieldName())));
                     }
                 } else {
                     if (sortItem.nestedName() != null){
-                        orderList.add(criteriaBuilder.asc(root.get(sortItem.fieldName()).get(sortItem.nestedName())));
+                        orderList.add(criteriaBuilder.asc(root.get(resolveNestedName(sortItem.fieldName(), sortItem.nestedName()))));
                     } else {
                         orderList.add(criteriaBuilder.asc(root.get(sortItem.fieldName())));
                     }
@@ -315,6 +320,21 @@ public class PersonRepository {
         } else if (Objects.equals(fieldName, "operation")) {
             return Operation.fromValue(fieldValue);
         } else return fieldValue;
+    }
+
+    private String resolveNestedName(String fieldName, String nestedName){
+        if (fieldName.equalsIgnoreCase("location")){
+            return switch (nestedName.toLowerCase()) {
+                case "x" -> "locationCoordinateX";
+                case "y" -> "locationCoordinateY";
+                default -> throw new IllegalParameterException("Field doesn't exist");
+            };
+        }
+        return switch (nestedName.toLowerCase()) {
+            case "x" -> "coordinateX";
+            case "y" -> "coordinateY";
+            default -> throw new IllegalParameterException("Field doesn't exist");
+        };
     }
 
 }
