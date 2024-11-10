@@ -327,6 +327,7 @@ public class PersonRepository {
             return switch (nestedName.toLowerCase()) {
                 case "x" -> "locationCoordinateX";
                 case "y" -> "locationCoordinateY";
+                case "name" -> "locationName";
                 default -> throw new IllegalParameterException("Field doesn't exist");
             };
         }
