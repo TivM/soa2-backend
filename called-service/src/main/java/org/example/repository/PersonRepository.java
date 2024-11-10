@@ -301,7 +301,7 @@ public class PersonRepository {
                     page,
                     size,
                     (int) Math.ceil((countResult * 1.0) / size),
-                    countResult
+                    (long) typedQuery.getResultList().size()
             );
         }
 
