@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 public class PersonWebClient implements PersonsClient {
-    private static final String BASE_URL = "https://localhost:8080/api/v1/persons";
+    private static final String BASE_URL = "https://localhost:8881/api/v1/persons";
 
     private final WebClient webClient;
     private final String baseUrl;

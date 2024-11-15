@@ -12,6 +12,11 @@ public class DemoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
+
+		// Пример для проверки правильности настройки SSL
+		System.out.println("SSL Settings:");
+		System.out.println("KeyStore: " + System.getProperty("server.ssl.key-store"));
+		System.out.println("TrustStore: " + System.getProperty("javax.net.ssl.trustStore"));
 	}
 
 }

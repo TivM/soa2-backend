@@ -1,18 +1,29 @@
 called:
   url:
-    base: http://localhost:8080/api/v1/persons
+    base: https://localhost:8881/api/v1/persons
 
 
 app:
   url:
-    base: http://localhost:8081
+    base: https://localhost:8081
 
 server:
   port: 8081
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/server.jks
+    key-store-password: certificate
+    key-alias: localhost
+    trust-store: classpath:keystore/trust.jks
+    trust-store-password: password
+    key-store-type: JKS
+    trust-store-type: JKS
+
 
 
 webclient:
   timeout: 1000
+
 
 spring:
   liquibase:
