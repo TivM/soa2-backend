@@ -1,0 +1,59 @@
+called:
+  url:
+    base: https://localhost:8881/api/v1/persons
+
+
+app:
+  url:
+    base: https://localhost:8081
+
+server:
+  port: 8081
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/server.jks
+    key-store-password: certificate
+    key-alias: localhost
+    trust-store: classpath:keystore/trust.jks
+    trust-store-password: password
+    key-store-type: JKS
+    trust-store-type: JKS
+
+
+
+webclient:
+  timeout: 1000
+
+
+spring:
+  liquibase:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/passport
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: true
+        show_sql: true
+        jdbc:
+          batch_size: 50
+          fetch_size: 50
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days
