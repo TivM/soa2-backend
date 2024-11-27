@@ -1,8 +1,12 @@
 package org.example.resources;
 
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.example.configuration.JNDIConfig;
+import org.example.service.PersonService;
+import org.example.service.impl.PersonServiceImpl;
 import org.library.dto.Coordinates;
 import org.library.dto.Location;
 import org.library.dto.Page;
@@ -23,11 +27,16 @@ import java.util.stream.Collectors;
 public class PersonResource {
 
 
-    private final PersonServiceImpl personService;
+//    private final PersonServiceImpl personService;
+//
+//    public PersonResource() {
+//        personService = new PersonServiceImpl();
+//    }
 
-    public PersonResource() {
-        personService = new PersonServiceImpl();
-    }
+//    @Inject
+//    PersonService personService;
+
+    PersonService personService = JNDIConfig.personService();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
