@@ -18,11 +18,13 @@ public class ConsulConfig {
         newService.setPort(8881);
         newService.setAddress("127.0.0.1");
 
-//        NewService.Check healthCheck = new NewService.Check();
-//        healthCheck.setHttp("http://127.0.0.1:8881/");
-//        healthCheck.setInterval("10s");
-//
-//        newService.setCheck(healthCheck);
+        NewService.Check healthCheck = new NewService.Check();
+        healthCheck.setHttp("https://127.0.0.1:8881/api/v1/health");
+        healthCheck.setTlsSkipVerify(true);
+        healthCheck.setInterval("10s");
+        healthCheck.setDeregisterCriticalServiceAfter("1m");
+
+        newService.setCheck(healthCheck);
 
         consulClient.agentServiceRegister(newService);
     }
