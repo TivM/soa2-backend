@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      httpclient:
+        ssl:
+          use-insecure-trust-manager: true
+      routes:
+        - id: demo-route
+          uri: ${DEMO_ROUTE_URI:https://localhost:8081}
+          predicates:
+            - Path=/api/v1/demography/**
+        - id: comments-route
+          uri: ${COMMENTS_ROUTE_URI:http://localhost:8082}
+          predicates:
+            - Path=/comments/**
+          filters:
+            - PrefixPath=/api
+            - AddResponseHeader=X-Powered-By, DanSON Gateway Service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: https://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+server:
+  port: 8887
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/server.jks
+    key-store-password: certificate
+    key-alias: localhost
+    trust-store: classpath:keystore/trust.jks
+    trust-store-password: password
+    key-store-type: JKS
+    trust-store-type: JKS
+

@@ -24,8 +24,9 @@ server:
 webclient:
   timeout: 1000
 
-
 spring:
+  application:
+    name: demo
   liquibase:
     enabled: false
   datasource:

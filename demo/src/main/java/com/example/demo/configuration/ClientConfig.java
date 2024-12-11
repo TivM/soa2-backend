@@ -44,24 +44,6 @@ public class ClientConfig {
     @Value("${webclient.timeout}")
     int timeout;
 
-//    @Bean
-//    public WebClient webClient() throws Exception {
-//
-//
-//        final HttpClient httpClient = HttpClient
-//                .create()
-//                .compress(true)
-//                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout)
-//                .doOnConnected(connection -> {
-//                    connection.addHandlerLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
-//                    connection.addHandlerLast(new WriteTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
-//                });
-//
-//        return WebClient.builder()
-//                .clientConnector(new ReactorClientHttpConnector(httpClient))
-//                .build();
-//    }
-
     @Bean
     public WebClient configureWebclient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
 

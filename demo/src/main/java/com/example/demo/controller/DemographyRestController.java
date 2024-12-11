@@ -25,4 +25,9 @@ public class DemographyRestController {
         Float percentage = demographyService.getPercentage(hairColor, nationality);
         return new PercentageResponse(percentage);
     }
+
+    @GetMapping("/get")
+    public String getString(){
+        return "ABOBA";
+    }
 }
