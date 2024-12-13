@@ -1,18 +1,28 @@
 spring:
   application:
     name: ${APPLICATION_NAME:configuration}
-#  spring.application.name=${APPLICATION_NAME:config-server}
-#  spring.cloud.config.server.git.uri=${GIT_URL:https://github.com/vinxgradxv/spring-config}
-#  spring.cloud.config.server.git.default-label=${GIT_BRANCH:main}
-#  spring.cloud.config.server.git.clone-on-start=true
-#  server.port=${APPLICATION_PORT:8095}
-#
-#  eureka.client.service-url.defaultZone=https://localhost:8761/eureka
-#  eureka.client.fetch-registry=true
-#  eureka.client.register-with-eureka=true
-#
-#  server.ssl.enabled=true
-#  server.ssl.key-store=classpath:static/keystore.jks
-#  server.ssl.key-store-password=password
-#  server.ssl.key-store-type=JKS
-#  server.ssl.key-alias=wildfly
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${GIT_URL:https://github.com/TivM/config-server}
+          default-label: ${GIT_BRANCH:main}
+          clone-on-start: true
+eureka:
+  client:
+    register-with-eureka: false
+    service-url:
+      defaultZone: https://localhost:8761/eureka
+    fetch-registry: false
+
+server:
+  port: 8095
+#  ssl:
+#    enabled: true
+#    key-store: classpath:keystore/server.jks
+#    key-store-password: certificate
+#    key-alias: localhost
+#    trust-store: classpath:keystore/trust.jks
+#    trust-store-password: password
+#    key-store-type: JKS
+#    trust-store-type: JKS
