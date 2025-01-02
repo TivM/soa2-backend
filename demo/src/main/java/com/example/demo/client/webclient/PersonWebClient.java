@@ -12,6 +12,8 @@ import org.library.enums.Nationality;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDateTime;
+
 public class PersonWebClient implements PersonsClient {
     private static final String BASE_URL = "https://localhost:8881/api/v1/persons";
 
@@ -39,6 +41,7 @@ public class PersonWebClient implements PersonsClient {
             Nationality nationality,
             Location location
     ) {
+        System.out.println("LOOOOOOG!!!!!!!!!!!");
         return webClient
                 .post()
                 .uri(baseUrl)
@@ -62,6 +65,7 @@ public class PersonWebClient implements PersonsClient {
 
     @Override
     public ListPersonResponse getAllPersons() {
+        System.out.println("LOOOOOOG!!!!!!!!!!!" + LocalDateTime.now());
         return webClient
                 .get()
                 .uri(baseUrl)
@@ -73,6 +77,7 @@ public class PersonWebClient implements PersonsClient {
 
     @Override
     public PersonResponse getByPersonId(Integer personId) {
+        System.out.println("LOOOOOOG!!!!!!!!!!!");
         return webClient
                 .get()
                 .uri(baseUrl + "/" + personId.toString())
@@ -126,6 +131,7 @@ public class PersonWebClient implements PersonsClient {
 
     @Override
     public Double getHeight(String operation) {
+        System.out.println("LOOOOOOG!!!!!!!!!!!" + LocalDateTime.now());
         return webClient
                 .get()
                 .uri(baseUrl + "/height/" + operation)
@@ -136,6 +142,7 @@ public class PersonWebClient implements PersonsClient {
 
     @Override
     public EnumValuesResponse getPersonEnum(String enumName) {
+        System.out.println("LOOOOOOG!!!!!!!!!!!" + LocalDateTime.now());
         return webClient
                 .get()
                 .uri(baseUrl + "/enum/" + enumName)

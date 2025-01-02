@@ -54,6 +54,13 @@ spring:
   cloud:
     config:
       uri: ${CONFIG_URL:http://localhost:8095}
+    loadbalancer:
+      enabled: true
+      eager-load:
+        clients:
+      retry:
+        max-retries-on-same-service-instance: 2
+
 
 
 

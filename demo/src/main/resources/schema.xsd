@@ -1,0 +1,70 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://localhost:8080/Entity"
+           targetNamespace="http://localhost:8080/Entity"
+           elementFormDefault="qualified">
+    <xs:element name="NominateBandRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="id" type="xs:int" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="genre" type="tns:MusicGenreDto" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="NominateBandResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="message" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="GetBandsByGenre">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="genre" type="tns:MusicGenreDto" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GetBandsByGenreResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="studio" type="tns:MusicBandDto" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="MusicGenreDto">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="POP"/>
+            <xs:enumeration value="MATH_ROCK"/>
+            <xs:enumeration value="BRIT_POP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="MusicBandDto">
+        <xs:sequence>
+            <xs:element name="id" type="xs:int" />
+            <xs:element name="name" type="xs:string" />
+            <xs:element name="coordinates" type="tns:CoordinatesDto" />
+            <xs:element name="numberOfParticipants" type="xs:int" />
+            <xs:element name="singlesCount" type="xs:int" />
+            <xs:element name="albumsCount" type="xs:int" />
+            <xs:element name="genre" type="tns:MusicGenreDto" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="studio" type="tns:StudioDto" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CoordinatesDto">
+        <xs:sequence>
+            <xs:element name="x" type="xs:double" />
+            <xs:element name="y" type="xs:double" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="StudioDto">
+        <xs:sequence>
+            <xs:element name="id" type="xs:int" />
+            <xs:element name="name" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

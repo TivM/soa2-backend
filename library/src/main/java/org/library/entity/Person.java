@@ -7,13 +7,15 @@ import lombok.experimental.Accessors;
 import org.library.enums.Color;
 import org.library.enums.Nationality;
 
+import java.io.Serializable;
+
 
 @Getter
 @Setter
 @Entity
 @Table(name = "person")
 @Accessors(chain = true)
-public class Person {
+public class Person implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")

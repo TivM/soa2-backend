@@ -9,6 +9,8 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -39,12 +41,14 @@ import java.util.stream.Collectors;
 
 
 @Configuration
+@LoadBalancerClient(name = "demo", configuration = BalancerConfig.class)
 public class ClientConfig {
 
     @Value("${webclient.timeout}")
     int timeout;
 
     @Bean
+    @LoadBalanced
     public WebClient configureWebclient() throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
 
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
